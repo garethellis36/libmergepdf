@@ -5,7 +5,7 @@
 [![Quality Score](https://img.shields.io/scrutinizer/g/hanneskod/libmergepdf.svg?style=flat-square)](https://scrutinizer-ci.com/g/hanneskod/libmergepdf)
 [![Dependency Status](https://img.shields.io/gemnasium/hanneskod/libmergepdf.svg?style=flat-square)](https://gemnasium.com/hanneskod/libmergepdf)
 
-PHP library for merging multiple PDFs using [fpdi/FPDI](https://github.com/hanneskod/fpdi)
+PHP library for merging multiple PDFs using [FPDI](https://github.com/Setasign/FPDI)
 
 Installation
 ------------
@@ -53,16 +53,9 @@ $m->addFinder($finder);
 file_put_contents('finder.pdf', $m->merge());
 ```
 
-Testing
--------
-Unit tests requires dependencies to be installed using composer:
-
-    $ curl -sS https://getcomposer.org/installer | php
-    $ php composer.phar install
-    $ phpunit
-
 Changelog
 ---------
+* 3.0.0 Depending on setasigns version of FPDI. No longer throws an exception when no files are added.
 * 2.4.0 Added `setTempDir()` to Merger.
 * 2.3.1 Added `addFinder()` to Merger.
 * 2.3.0 Injecting FPDI is now optional. Added `addIterator()` to Merger.

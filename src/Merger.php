@@ -2,10 +2,8 @@
 
 namespace iio\libmergepdf;
 
-use fpdi\FPDI;
-use RuntimeException;
-use Traversable;
 use Symfony\Component\Finder\Finder;
+use FPDI;
 
 /**
  * Merge existing pdfs into one
@@ -23,7 +21,7 @@ class Merger
     private $files = array();
 
     /**
-     * @var FPDI Fpdi object
+     * @var FPDI
      */
     private $fpdi;
 
@@ -33,9 +31,7 @@ class Merger
     private $tempDir;
 
     /**
-     * Constructor
-     *
-     * @param FPDI $fpdi
+     * @param FPDi $fpdi
      */
     public function __construct(FPDI $fpdi = null)
     {
@@ -95,13 +91,13 @@ class Merger
     /**
      * Add files using iterator
      *
-     * @param  array|Traversable $iterator
+     * @param  array|\Traversable $iterator
      * @return void
      * @throws Exception If $iterator is not valid
      */
     public function addIterator($iterator)
     {
-        if (!is_array($iterator) && !$iterator instanceof Traversable) {
+        if (!is_array($iterator) && !$iterator instanceof \Traversable) {
             throw new Exception("\$iterator must be traversable");
         }
 
@@ -124,39 +120,33 @@ class Merger
     }
 
     /**
-     * Merges your provided PDFs and get raw string
+     * Merges your provided PDFs and get a raw string
      *
      * @return string
-     * @throws Exception If no PDFs were added
-     * @throws Exception If a specified page does not exist
      */
     public function merge()
     {
-        if (empty($this->files)) {
-            throw new Exception("Unable to merge, no PDFs added");
-        }
-
+        $fpdi = clone $this->fpdi;
         $fname = '';
-        try {
-            $fpdi = clone $this->fpdi;
 
-            foreach ($this->files as $fileData) {
+        try {
+            while ($fileData = array_pop($this->files)) {
                 list($fname, $pages, $cleanup) = $fileData;
+
                 $pages = $pages->getPages();
-                $iPageCount = $fpdi->setSourceFile($fname);
+                $iPageCount = $this->fpdi->setSourceFile($fname);
 
                 // If no pages are specified, add all pages
                 if (empty($pages)) {
                     $pages = range(1, $iPageCount);
                 }
-                
-                // Add specified pages
+
                 foreach ($pages as $page) {
-                    $template = $fpdi->importPage($page);
-                    $size = $fpdi->getTemplateSize($template);
+                    $template = $this->fpdi->importPage($page);
+                    $size = $this->fpdi->getTemplateSize($template);
                     $orientation = ($size['w'] > $size['h']) ? 'L' : 'P';
-                    $fpdi->AddPage($orientation, array($size['w'], $size['h']));
-                    $fpdi->useTemplate($template);
+                    $this->fpdi->AddPage($orientation, array($size['w'], $size['h']));
+                    $this->fpdi->useTemplate($template);
                 }
 
                 if ($cleanup) {
@@ -164,11 +154,8 @@ class Merger
                 }
             }
 
-            $this->files = array();
-
             return $fpdi->Output('', 'S');
-
-        } catch (RuntimeException $e) {
+        } catch (\Exception $e) {
             throw new Exception("FPDI: '{$e->getMessage()}' in '$fname'", 0, $e);
         }
     }
